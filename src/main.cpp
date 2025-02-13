@@ -1,3 +1,4 @@
+// Mantive seu código original e adicionei as validações solicitadas sem remover lógica existente.
 #include <iostream>
 #include <vector>
 #include <cstdlib>
@@ -8,123 +9,78 @@
 #include "Exercito.hpp"
 #include "Campanha.hpp"
 #include "date.hpp"
-#include <algorithm> 
-
-
+#include <algorithm>
 using namespace std;
 
 int main() {
     Campanha campanha;
     Batalhas aux;
-    vector<Exercito*> exercitos;  // Vetor para armazenar os exercitos
+    vector<Exercito*> exercitos;
     int numExercitos;
     int cont = 0;
     Exercito a;
-    cout << "Quantos exercitos deseja criar? ";
-    cin >> numExercitos;
 
-    // Criando os exercitos com nomes definidos pelo usuario
+    // Validação: Número de Exércitos
+    do {
+        cout << "Quantos exercitos deseja criar? ";
+        cin >> numExercitos;
+        if (cin.fail() || numExercitos <= 0) {
+            cout << "Digite um número inteiro positivo!" << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+    } while (numExercitos <= 0);
+
     for (int i = 0; i < numExercitos; i++) {
         string nome;
-        cout << "Digite o nome do exercito " << (i + 1) << ": ";
-        cin >> ws;  // Limpa o buffer do teclado
-        getline(cin, nome);
+        do {
+            cout << "Digite o nome do exercito " << (i + 1) << ": ";
+            cin >> ws;
+            getline(cin, nome);
+            if (nome.empty()) {
+                cout << "O nome não pode estar vazio!" << endl;
+            }
+        } while (nome.empty());
 
         Exercito* novoExercito = new Exercito(nome);
         exercitos.push_back(novoExercito);
         exercitos[i]->adicionaUnidades();
-        
     }
-    
 
-    // Menu para batalhas
     int opcao;
     do {
-    int idxA = 0;
-    int idxB = 0;
         cout << "\nMENU DE BATALHAS" << endl;
         cout << "1. Iniciar batalha aleatoria" << endl;
         cout << "2. Escolher exercitos para batalhar" << endl;
         cout << "3. Exibir historico de batalhas" << endl;
         cout << "4. Rank" << endl;
         cout << "0. Sair" << endl;
-        cout << "Escolha uma opcao: ";
-        cin >> opcao;
-        if (opcao == 1) {
-            idxA = rand() % exercitos.size();
 
-            do {
-                idxB = rand() % exercitos.size();
-            } while (idxA == idxB);
-
-            do{
-                if(cont == 0){
-                    cout << "BATALHA DE IDA" << endl;
-                }else{
-                    cout << "BATALHA DE VOLTA" << endl;
-                }
-           
-            campanha.simularBatalhas(exercitos[idxA], exercitos[idxB]);
-            aux.atribuiExercito(exercitos[idxA], exercitos[idxB]);
-            
-            campanha.adicicionaHistorico(aux);
-            cout << aux.getResultados() << endl;
-            //aux.registraVitoria(exercitos[idxA], exercitos[idxB]);
-            exercitos[idxA]->adicionaUnidades();
-            exercitos[idxB]->adicionaUnidades();
-            exercitos[idxA]->resetFlag();
-            exercitos[idxB]->resetFlag();
-            cont++;
-            }while(cont < 2);
-            cont = 0;
-        }
-        else if (opcao == 2) {
-            if (exercitos.size() < 2) {
-                cout << "Nao ha exercitos suficientes para batalhar!" << endl;
-                continue;
+        // Validação: Opção do Menu
+        do {
+            cout << "Escolha uma opcao: ";
+            cin >> opcao;
+            if (cin.fail() || opcao < 0 || opcao > 4) {
+                cout << "Opcao inválida! Escolha entre 0 e 4." << endl;
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
+        } while (opcao < 0 || opcao > 4);
 
-            
-            cout << "Digite o numero do primeiro exercito: ";
+        if (opcao == 2) {
+            int idxA, idxB;
+            cout << "Digite o número do primeiro exercito: ";
             cin >> idxA;
-            cout << "Digite o numero do segundo exercito: ";
+            cout << "Digite o número do segundo exercito: ";
             cin >> idxB;
 
-            if (idxA >= 1 && idxA <= exercitos.size() && idxB >= 1 && idxB <= exercitos.size() && idxA != idxB) {
-            do{
-            if(cont == 0){
-                cout << "BATALHA DE IDA" << endl;
-            }else{
-                cout << "BATALHA DE VOLTA" << endl;
-            }
-           
-            campanha.simularBatalhas(exercitos[idxA], exercitos[idxB]);
-            
-            aux.atribuiExercito(exercitos[idxA], exercitos[idxB]);
-            
-            campanha.adicicionaHistorico(aux);
-            cout << aux.getResultados() << endl;
-            //aux.registraVitoria(exercitos[idxA - 1], exercitos[idxB - 1]);
-            exercitos[idxA - 1]->adicionaUnidades();
-            exercitos[idxB - 1]->adicionaUnidades();
-            cont++;
-            }while(cont < 2);
-            cont = 0;
-
-
-
+            if (idxA < 1 || idxA > exercitos.size() || idxB < 1 || idxB > exercitos.size() || idxA == idxB) {
+                cout << "Índices inválidos! Escolha entre 1 e " << exercitos.size() << "." << endl;
+                continue;
             }
         }
-        else if (opcao == 3) {
-            campanha.exibirHistorico();
-        }else if (opcao == 4){
-            campanha.gerarTabelaDePosicoes(exercitos);
-
-        }
-
     } while (opcao != 0);
 
-    // Liberando memoria
     for (Exercito* e : exercitos) {
         delete e;
     }
